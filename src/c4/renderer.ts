@@ -7,6 +7,7 @@ import type {
 import type { DiagramColors } from '../theme.ts'
 import { svgOpenTag, buildStyleBlock } from '../theme.ts'
 import { FONT_SIZES, FONT_WEIGHTS, STROKE_WIDTHS, estimateTextWidth, TEXT_BASELINE_SHIFT } from '../styles.ts'
+import { escapeXml, midpoint } from '../svg-utils.ts'
 
 // ============================================================================
 // C4 diagram SVG renderer
@@ -354,39 +355,6 @@ function renderRelationship(rel: PositionedC4Relationship): string {
 // Utilities
 // ============================================================================
 
-/** Compute the arc-length midpoint of a polyline path. */
-function midpoint(points: Array<{ x: number; y: number }>): { x: number; y: number } {
-  if (points.length === 0) return { x: 0, y: 0 }
-  if (points.length === 1) return points[0]!
-
-  let totalLen = 0
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i]!.x - points[i - 1]!.x
-    const dy = points[i]!.y - points[i - 1]!.y
-    totalLen += Math.sqrt(dx * dx + dy * dy)
-  }
-
-  if (totalLen === 0) return points[0]!
-
-  const halfLen = totalLen / 2
-  let walked = 0
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i]!.x - points[i - 1]!.x
-    const dy = points[i]!.y - points[i - 1]!.y
-    const segLen = Math.sqrt(dx * dx + dy * dy)
-    if (walked + segLen >= halfLen) {
-      const t = segLen > 0 ? (halfLen - walked) / segLen : 0
-      return {
-        x: points[i - 1]!.x + dx * t,
-        y: points[i - 1]!.y + dy * t,
-      }
-    }
-    walked += segLen
-  }
-
-  return points[points.length - 1]!
-}
-
 /** Flatten nested boundaries into a single array for rendering */
 function flattenBoundaries(boundaries: PositionedC4Boundary[]): PositionedC4Boundary[] {
   const result: PositionedC4Boundary[] = []
@@ -395,13 +363,4 @@ function flattenBoundaries(boundaries: PositionedC4Boundary[]): PositionedC4Boun
     result.push(...flattenBoundaries(b.children))
   }
   return result
-}
-
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }

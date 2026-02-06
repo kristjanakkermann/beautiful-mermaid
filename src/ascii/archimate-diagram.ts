@@ -45,7 +45,7 @@ const LAYER_LABELS: Record<ArchiMateLayer, string> = {
   strategy:       'Strategy',
   motivation:     'Motivation',
   physical:       'Physical',
-  implementation: 'Implementation',
+  implementation: 'Implementation & Migration',
 }
 
 // ============================================================================

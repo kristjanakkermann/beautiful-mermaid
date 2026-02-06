@@ -52,12 +52,14 @@ const C4 = {
  * Lay out a parsed C4 diagram using dagre.
  * Returns positioned element boxes, relationship paths, and boundary rectangles.
  *
- * Kept async for API compatibility — dagre itself is synchronous.
+ * Async for API consistency with other layout engines (dagre itself is synchronous).
+ * @param options - Reserved for future layout customization (padding, spacing).
  */
 export async function layoutC4Diagram(
   diagram: C4Diagram,
-  _options: RenderOptions = {}
+  options: RenderOptions = {}
 ): Promise<PositionedC4Diagram> {
+  void options
   if (diagram.elements.length === 0) {
     return { width: 0, height: 0, elements: [], relationships: [], boundaries: [] }
   }

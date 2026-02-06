@@ -119,8 +119,10 @@ export function parseC4(lines: string[]): C4Diagram {
     }
 
     // --- Closing brace ---
-    if (line === '}') {
-      boundaryStack.pop()
+    if (line.trim() === '}') {
+      if (boundaryStack.length > 0) {
+        boundaryStack.pop()
+      }
       continue
     }
 

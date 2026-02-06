@@ -62,12 +62,14 @@ const ARCHIMATE = {
  * Lay out a parsed ArchiMate diagram using dagre.
  * Returns positioned elements, layer bands, and relationship paths.
  *
- * Kept async for API compatibility — dagre itself is synchronous.
+ * Async for API consistency with other layout engines (dagre itself is synchronous).
+ * @param options - Reserved for future layout customization (padding, spacing).
  */
 export async function layoutArchiMateDiagram(
   diagram: ArchiMateDiagram,
-  _options: RenderOptions = {}
+  options: RenderOptions = {}
 ): Promise<PositionedArchiMateDiagram> {
+  void options
   if (diagram.elements.size === 0) {
     return { width: 0, height: 0, layers: [], elements: [], relationships: [] }
   }

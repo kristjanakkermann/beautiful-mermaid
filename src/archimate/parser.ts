@@ -105,8 +105,7 @@ export function parseArchimate(lines: string[]): ArchiMateDiagram {
 
   // Start from index 1 — skip the "archimate-layered" header
   for (let i = 1; i < lines.length; i++) {
-    const raw = lines[i]!
-    const trimmed = raw.trim()
+    const trimmed = lines[i]!.trim()
 
     // Skip empty lines and comments
     if (trimmed.length === 0 || trimmed.startsWith('%%')) continue
@@ -143,18 +142,8 @@ export function parseArchimate(lines: string[]): ArchiMateDiagram {
       }
     }
 
-    // Lines outside a layer block that aren't relationships are ignored.
-    // If we're inside a layer block and the line doesn't match any pattern,
-    // check if it could be a top-level construct that resets the layer context.
-    if (currentLayer && !raw.match(/^\s/) && !layerMatch) {
-      // Non-indented line that's not a layer header — we're leaving the block
-      currentLayer = null
-      // Re-try as a relationship
-      const topRel = parseRelationship(trimmed)
-      if (topRel) {
-        diagram.relationships.push(topRel)
-      }
-    }
+    // Lines that don't match any pattern are silently ignored.
+    // Layer context only changes on a new layer header (e.g., "business:").
   }
 
   return diagram

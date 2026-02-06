@@ -9,6 +9,7 @@ import type {
 import type { DiagramColors } from '../theme.ts'
 import { svgOpenTag, buildStyleBlock } from '../theme.ts'
 import { FONT_SIZES, FONT_WEIGHTS, STROKE_WIDTHS, estimateTextWidth, TEXT_BASELINE_SHIFT } from '../styles.ts'
+import { escapeXml, midpoint } from '../svg-utils.ts'
 
 // ============================================================================
 // ArchiMate diagram SVG renderer
@@ -104,11 +105,6 @@ export function renderArchiMateSvg(
   // 4. Relationship labels
   for (const rel of diagram.relationships) {
     parts.push(renderRelationshipLabel(rel))
-  }
-
-  // 5. Relationship markers (arrowheads, diamonds)
-  for (const rel of diagram.relationships) {
-    parts.push(renderRelationshipMarkers(rel))
   }
 
   parts.push('</svg>')
@@ -361,65 +357,3 @@ function renderRelationshipLabel(rel: PositionedArchiMateRelationship): string {
   )
 }
 
-/** Render relationship endpoint markers that aren't handled by SVG marker defs */
-function renderRelationshipMarkers(rel: PositionedArchiMateRelationship): string {
-  // All markers are handled via SVG <marker> defs on the polyline
-  // This function is a placeholder for any additional custom markers
-  // that might be needed in the future (e.g., inline decorations)
-  if (rel.points.length < 2) return ''
-  return ''
-}
-
-// ============================================================================
-// Geometry utilities
-// ============================================================================
-
-/** Compute the arc-length midpoint of a polyline path.
- *  Walks along each segment, finds the point at exactly 50% of total path length.
- *  This ensures the label sits ON the path even for orthogonal routes with bends. */
-function midpoint(points: Array<{ x: number; y: number }>): { x: number; y: number } {
-  if (points.length === 0) return { x: 0, y: 0 }
-  if (points.length === 1) return points[0]!
-
-  // Compute total path length
-  let totalLen = 0
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i]!.x - points[i - 1]!.x
-    const dy = points[i]!.y - points[i - 1]!.y
-    totalLen += Math.sqrt(dx * dx + dy * dy)
-  }
-
-  if (totalLen === 0) return points[0]!
-
-  // Walk to 50% of total length
-  const halfLen = totalLen / 2
-  let walked = 0
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i]!.x - points[i - 1]!.x
-    const dy = points[i]!.y - points[i - 1]!.y
-    const segLen = Math.sqrt(dx * dx + dy * dy)
-    if (walked + segLen >= halfLen) {
-      const t = segLen > 0 ? (halfLen - walked) / segLen : 0
-      return {
-        x: points[i - 1]!.x + dx * t,
-        y: points[i - 1]!.y + dy * t,
-      }
-    }
-    walked += segLen
-  }
-
-  return points[points.length - 1]!
-}
-
-// ============================================================================
-// Utilities
-// ============================================================================
-
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
